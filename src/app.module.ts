@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './products/entities/product.entity';
@@ -16,18 +15,18 @@ import { ProductsModule } from './products/products.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: 'localhost',
+        host: 'store-db', // 'store-db',
         port: 5432,
-        username: 'nest_user',
-        password: 'nest_password',
-        database: 'products_db',
+        username: 'postgres',
+        password: '123456',
+        database: 'storedb',
         entities: [Product],
         autoLoadEntities: true, // Carga automáticamente las entidades
         synchronize: true, // ¡Solo para desarrollo!
       }),
     }),
   ],
-  controllers: [AppController],
+  controllers: [],
   
 })
 export class AppModule {}

@@ -34,7 +34,7 @@ export class ProductsService {
     await this.productsRepository.delete(id);
   }
 
-  async searchByName(name?: string): Promise<Product[]> {
+  async searchByName(name?: string) {
     const query = this.productsRepository.createQueryBuilder('product');
   
     // Si se proporciona un nombre, buscar nombres similares
