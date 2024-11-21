@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
-import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { MessagePattern } from '@nestjs/microservices';
+import { Body, Controller, Param, Query } from "@nestjs/common";
+import { ProductsService } from "./products.service";
+import { CreateProductDto } from "./dto/create-product.dto";
+import { UpdateProductDto } from "./dto/update-product.dto";
+import { MessagePattern, Payload } from "@nestjs/microservices";
 
 @Controller()
 export class ProductsController {
@@ -38,5 +38,10 @@ export class ProductsController {
   @MessagePattern("findByName")
   async search(@Query('name') name?: string) {
     return this.productsService.searchByName(name);
+  }
+
+  @MessagePattern("validateProducts")
+  validateProduct(@Payload() ids: number[]) {
+    return this.productsService.validateProduct(ids);
   }
 }

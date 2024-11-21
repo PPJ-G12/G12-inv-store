@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Product } from './entities/product.entity';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { HttpStatus, Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { In, Repository } from "typeorm";
+import { Product } from "./entities/product.entity";
+import { CreateProductDto } from "./dto/create-product.dto";
+import { UpdateProductDto } from "./dto/update-product.dto";
+import { RpcException } from "@nestjs/microservices";
 
 @Injectable()
 export class ProductsService {
@@ -44,6 +45,26 @@ export class ProductsService {
   
     return query.getMany();
   }
-  
+
+  async validateProduct(ids: number[]): Promise<Product[]> {
+    const validProducts = await this.productsRepository.findBy({ id: In(ids) });
+
+    // Extraer los ids de los productos encontrados
+    const foundIds = validProducts.map(product => product.id);
+
+    // Identificar los ids que faltan comparando con los ids originales
+    const missingIds = ids.filter(id => !foundIds.includes(id));
+
+    // Si hay ids faltantes, lanzar una excepción
+    if (missingIds.length > 0) {
+      throw new RpcException({
+        message: "Some products were not found!",
+        status: HttpStatus.BAD_REQUEST,
+      });
+    }
+
+    // Retornar los productos válidos si todos los ids existen
+    return validProducts;
+  }
   
 }
