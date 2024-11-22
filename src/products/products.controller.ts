@@ -1,16 +1,13 @@
-import { Controller,Body,Query, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Controller, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 
-
-
 @Controller()
 export class ProductsController {
   private readonly logger = new Logger(ProductsController.name);
   constructor(private readonly productsService: ProductsService) {}
-  
   
   @MessagePattern('createProduct')
   async create(@Payload() createProductDto: CreateProductDto) {
@@ -95,11 +92,8 @@ export class ProductsController {
     }
   }
 
-
-
- 
-  /* @MessagePattern("findByName")
-  async search(@Query('name') name?: string) {
-    return this.productsService.searchByName(name);
-  } */
+  @MessagePattern("validateProducts")
+  validateProduct(@Payload() ids: number[]) {
+    return this.productsService.validateProduct(ids);
+  }
 }

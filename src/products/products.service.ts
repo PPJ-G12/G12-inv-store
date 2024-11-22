@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from "typeorm";
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -31,14 +31,12 @@ export class ProductsService {
     console.log('Product found:', product); // Log para verificar
     return product;
   }
-  
 
   async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
     await this.productsRepository.update(id, updateProductDto);
     return this.findOne(id);
   }
 
-  
   async remove(id: number): Promise<void> {
     const product = await this.productsRepository.findOne({ where: { id } });
     if (!product) {
@@ -47,19 +45,25 @@ export class ProductsService {
     await this.productsRepository.delete(id);
   }
 
-  
-  
+  async validateProduct(ids: number[]): Promise<Product[]> {
+    const validProducts = await this.productsRepository.findBy({ id: In(ids) });
 
-  async searchByName(name?: string) {
-    const query = this.productsRepository.createQueryBuilder('product');
-  
-    // Si se proporciona un nombre, buscar nombres similares
-    if (name) {
-      query.where('product.name ILIKE :name', { name: `%${name}%` });
+    // Extraer los ids de los productos encontrados
+    const foundIds = validProducts.map(product => product.id);
+
+    // Identificar los ids que faltan comparando con los ids originales
+    const missingIds = ids.filter(id => !foundIds.includes(id));
+
+    // Si hay ids faltantes, lanzar una excepción
+    if (missingIds.length > 0) {
+      throw new RpcException({
+        message: "Some products were not found!",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
-  
-    return query.getMany();
+
+    // Retornar los productos válidos si todos los ids existen
+    return validProducts;
   }
-  
   
 }
