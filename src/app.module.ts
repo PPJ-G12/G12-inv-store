@@ -8,21 +8,20 @@ import { ProductsModule } from './products/products.module';
   imports: [
     ProductsModule,
     ConfigModule.forRoot({
-      isGlobal: true, // Hace que las variables de configuración estén disponibles globalmente
+      isGlobal: true, 
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: 'store-db', // 'store-db',
-        port: 5432,
+        host: 'store-db', 
         username: 'postgres',
         password: '123456',
         database: 'storedb',
         entities: [Product],
-        autoLoadEntities: true, // Carga automáticamente las entidades
-        synchronize: true, // ¡Solo para desarrollo!
+        autoLoadEntities: true, 
+        synchronize: true, 
       }),
     }),
   ],

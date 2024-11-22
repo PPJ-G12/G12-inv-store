@@ -1,10 +1,10 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
+import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from "typeorm";
-import { Product } from "./entities/product.entity";
-import { CreateProductDto } from "./dto/create-product.dto";
-import { UpdateProductDto } from "./dto/update-product.dto";
-import { RpcException } from "@nestjs/microservices";
+import { Product } from './entities/product.entity';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class ProductsService {
@@ -23,7 +23,13 @@ export class ProductsService {
   }
 
   async findOne(id: number): Promise<Product> {
-    return this.productsRepository.findOne({ where: { id } });
+    console.log('Finding product with ID:', id); // Log para depurar
+    const product = await this.productsRepository.findOne({ where: { id } });
+    if (!product) {
+      throw new RpcException(`Product with ID ${id} not found`);
+    }
+    console.log('Product found:', product); // Log para verificar
+    return product;
   }
 
   async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
@@ -32,18 +38,11 @@ export class ProductsService {
   }
 
   async remove(id: number): Promise<void> {
-    await this.productsRepository.delete(id);
-  }
-
-  async searchByName(name?: string) {
-    const query = this.productsRepository.createQueryBuilder('product');
-  
-    // Si se proporciona un nombre, buscar nombres similares
-    if (name) {
-      query.where('product.name ILIKE :name', { name: `%${name}%` });
+    const product = await this.productsRepository.findOne({ where: { id } });
+    if (!product) {
+      throw new RpcException(`Product with ID ${id} not found`);
     }
-  
-    return query.getMany();
+    await this.productsRepository.delete(id);
   }
 
   async validateProduct(ids: number[]): Promise<Product[]> {
