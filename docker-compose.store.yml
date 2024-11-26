@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  store-ms:
+    build: ./
+    volumes:
+      - ./src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:123456@store-db:5432/storedb?schema=public
+      - NATS_SERVERS=nats://nats-server:4222
+    networks:
+      - app_network
+
+  store-db:
+    container_name: store_database
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./store-ms/postgres:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=storedb
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    external: true
