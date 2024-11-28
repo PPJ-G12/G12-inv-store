@@ -2,8 +2,7 @@ import { HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from "typeorm";
 import { Product } from './entities/product.entity';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { CreateProductDto, UpdateProductDto } from './dto';
 import { RpcException } from '@nestjs/microservices';
 import { PaginationDto } from "../common";
 
@@ -15,8 +14,16 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    const product = this.productsRepository.create(createProductDto);
-    return this.productsRepository.save(product);
+    const { name } = createProductDto;
+    const product = await this.productsRepository.findOne({ where: { name } });
+    if (product) {
+      throw new RpcException({
+        status: HttpStatus.CONFLICT,
+        message: 'Product with this name already exists',
+      });
+    }
+    const newProduct = this.productsRepository.create(createProductDto);
+    return this.productsRepository.save(newProduct);
   }
 
   async findAll(paginationDto: PaginationDto): Promise<{ data: Product[]; total: number; page: number; limit: number }> {
@@ -36,7 +43,6 @@ export class ProductsService {
   }
 
   async findOne(id: number): Promise<Product> {
-    console.log('Finding product with ID:', id); // Log para depurar
     const product = await this.productsRepository.findOne({ where: { id } });
     if (!product) {
       throw new RpcException({
@@ -48,31 +54,10 @@ export class ProductsService {
   }
 
   async update(id: number, updateProductDto: UpdateProductDto) {
-    await this.findOne(id); // Verifica que el producto existe
+    // Verifica que el producto existe antes de actualizar
+    await this.findOne(id);
 
-    // Excluye el campo `id` y filtra valores nulos o indefinidos
-    // @ts-ignore
-    const { id: _, ...data } = updateProductDto;
-    const updateData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== undefined && value !== null)
-    );
-
-    if (Object.keys(updateData).length === 0) {
-      throw new RpcException({
-        status: HttpStatus.BAD_REQUEST,
-        message: 'No valid fields to update',
-      });
-    }
-
-    // Realiza la actualización
-    const result = await this.productsRepository.update(id, updateData);
-
-    if (result.affected === 0) {
-      throw new RpcException({
-        status: HttpStatus.NOT_FOUND,
-        message: `Product with ID ${id} not found`,
-      });
-    }
+    await this.productsRepository.update(id, updateProductDto);
 
     // Retorna el producto actualizado
     return this.findOne(id);
