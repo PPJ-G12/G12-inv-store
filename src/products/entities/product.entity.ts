@@ -5,13 +5,13 @@ export class Product {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column( { unique: true })
   name: string;
 
   @Column()
   description: string;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('int', { unsigned: true })
   price: number;
 
   @Column()
