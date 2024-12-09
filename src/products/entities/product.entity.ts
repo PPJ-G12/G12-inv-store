@@ -11,6 +11,9 @@ export class Product {
   @Column()
   description: string;
 
+  @Column()
+  image: string;
+
   @Column('int', { unsigned: true })
   price: number;
 

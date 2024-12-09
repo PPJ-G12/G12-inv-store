@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsPositive, IsInt, MinLength } from 'class-validator';
+import { IsString, IsNumber, IsPositive, IsInt, MinLength, IsUrl } from "class-validator";
 
 export class CreateProductDto {
   @IsString()
@@ -7,6 +7,10 @@ export class CreateProductDto {
 
   @IsString()
   description: string;
+
+  @IsString()
+  @IsUrl()
+  image: string;
 
   @IsNumber()
   @IsPositive()
